@@ -99,6 +99,15 @@ policies:
         protocol: "TCP"
         description: "Allow legitimate web application traffic"
 
+      # Allow legitimate web traffic
+      - name: "allow-web-traffic-1"
+        priority: 300
+        action: "ALLOW"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Allow legitimate web application traffic"
+
   # Policy for database protection
   - name: "database-protection-policy"
     description: "Firewall policy for database security"

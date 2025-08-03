@@ -59,7 +59,7 @@ variable "firewall_description" {
 }
 
 variable "tags" {
-  description = "Additional tags for resources"
+  description = "Additional tags for resources for the firewall"
   type        = map(string)
   default     = {}
 } 
