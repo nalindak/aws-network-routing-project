@@ -146,7 +146,7 @@ resource "aws_networkfirewall_logging_configuration" "main" {
         prefix     = "firewall-logs/"
       }
       log_destination_type = "S3"
-      log_type            = "FLOW"
+      log_type             = "FLOW"
     }
 
     log_destination_config {
@@ -155,7 +155,7 @@ resource "aws_networkfirewall_logging_configuration" "main" {
         prefix     = "alert-logs/"
       }
       log_destination_type = "S3"
-      log_type            = "ALERT"
+      log_type             = "ALERT"
     }
   }
 }
@@ -211,8 +211,8 @@ resource "aws_networkfirewall_rule_group" "block_domains" {
     rules_source {
       rules_source_list {
         generated_rules_type = "DENYLIST"
-        target_types        = ["HTTP_HOST", "TLS_SNI"]
-        targets             = ["malicious-domain.com", "bad-site.org"]
+        target_types         = ["HTTP_HOST", "TLS_SNI"]
+        targets              = ["malicious-domain.com", "bad-site.org"]
       }
     }
   }
