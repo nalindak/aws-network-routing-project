@@ -1,0 +1,131 @@
+# AWS Network Firewall Rules Configuration
+# This file defines firewall policies and rules for the AWS Network Firewall project
+
+policies:
+  - name: "network-firewall-policy"
+    description: "Main firewall policy for network traffic inspection"
+    rules:
+      # Block known malicious IPs
+      - name: "block-malicious-ips"
+        priority: 100
+        action: "DROP"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "ANY"
+        description: "Block known malicious IP addresses"
+
+      # Allow HTTP traffic
+      - name: "allow-http"
+        priority: 200
+        action: "ALLOW"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Allow HTTP traffic on port 80"
+
+      # Allow HTTPS traffic
+      - name: "allow-https"
+        priority: 201
+        action: "ALLOW"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Allow HTTPS traffic on port 443"
+
+      # Block SSH from external sources
+      - name: "block-external-ssh"
+        priority: 300
+        action: "DROP"
+        source: "0.0.0.0/0"
+        destination: "10.0.0.0/8"
+        protocol: "TCP"
+        description: "Block SSH access from external sources"
+
+      # Allow internal SSH
+      - name: "allow-internal-ssh"
+        priority: 301
+        action: "ALLOW"
+        source: "10.0.0.0/8"
+        destination: "10.0.0.0/8"
+        protocol: "TCP"
+        description: "Allow SSH access within internal network"
+
+      # Block common attack ports
+      - name: "block-attack-ports"
+        priority: 400
+        action: "DROP"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Block common attack ports (22, 23, 3389)"
+
+      # Alert on suspicious activity
+      - name: "alert-suspicious"
+        priority: 500
+        action: "ALERT"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "ANY"
+        description: "Alert on suspicious network activity"
+
+  # Additional policy for specific use cases
+  - name: "web-application-policy"
+    description: "Firewall policy for web application protection"
+    rules:
+      # Block SQL injection attempts
+      - name: "block-sql-injection"
+        priority: 100
+        action: "DROP"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Block SQL injection attempts"
+
+      # Block XSS attempts
+      - name: "block-xss"
+        priority: 101
+        action: "DROP"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Block cross-site scripting attempts"
+
+      # Allow legitimate web traffic
+      - name: "allow-web-traffic"
+        priority: 200
+        action: "ALLOW"
+        source: "ANY"
+        destination: "ANY"
+        protocol: "TCP"
+        description: "Allow legitimate web application traffic"
+
+  # Policy for database protection
+  - name: "database-protection-policy"
+    description: "Firewall policy for database security"
+    rules:
+      # Block direct database access from internet
+      - name: "block-external-db-access"
+        priority: 100
+        action: "DROP"
+        source: "0.0.0.0/0"
+        destination: "10.0.10.0/24"
+        protocol: "TCP"
+        description: "Block external access to database subnets"
+
+      # Allow internal database access
+      - name: "allow-internal-db-access"
+        priority: 200
+        action: "ALLOW"
+        source: "10.0.0.0/8"
+        destination: "10.0.10.0/24"
+        protocol: "TCP"
+        description: "Allow internal access to databases"
+
+      # Block database admin ports
+      - name: "block-db-admin-ports"
+        priority: 300
+        action: "DROP"
+        source: "ANY"
+        destination: "10.0.10.0/24"
+        protocol: "TCP"
+        description: "Block access to database admin ports" 

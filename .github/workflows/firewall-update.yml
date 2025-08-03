@@ -1,0 +1,109 @@
+name: Firewall Rule Updates
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'config/firewall-rules.yaml'
+      - 'python/firewall_manager.py'
+      - '.github/workflows/firewall-update.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'config/firewall-rules.yaml'
+      - 'python/firewall_manager.py'
+      - '.github/workflows/firewall-update.yml'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no changes)'
+        required: false
+        default: true
+        type: boolean
+      validate_only:
+        description: 'Only validate configuration'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  AWS_REGION: ap-southeast-4
+  PYTHON_VERSION: "3.11"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  firewall-update:
+    name: Firewall Rule Update
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install Python dependencies
+        run: |
+          cd python
+          uv sync
+
+      - name: Validate Firewall Configuration
+        run: |
+          cd python
+          uv run python firewall_manager.py --config ../config/firewall-rules.yaml --region ${{ env.AWS_REGION }} --validate-only
+
+      - name: Update Firewall Rules
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && !github.event.inputs.validate_only
+        run: |
+          cd python
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            uv run python firewall_manager.py --config ../config/firewall-rules.yaml --region ${{ env.AWS_REGION }} --dry-run
+          else
+            uv run python firewall_manager.py --config ../config/firewall-rules.yaml --region ${{ env.AWS_REGION }}
+          fi
+
+      - name: Dry Run Firewall Updates
+        if: github.event_name == 'pull_request' || github.event.inputs.dry_run == 'true'
+        run: |
+          cd python
+          uv run python firewall_manager.py --config ../config/firewall-rules.yaml --region ${{ env.AWS_REGION }} --dry-run
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Firewall Rule Update Validation ✅
+            
+            Firewall rule configuration has been validated successfully.
+            
+            **Configuration File:** \`config/firewall-rules.yaml\`
+            **Region:** \`${{ env.AWS_REGION }}\`
+            **Status:** ✅ Valid
+            
+            The firewall rule updates are ready for deployment.`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            }) 

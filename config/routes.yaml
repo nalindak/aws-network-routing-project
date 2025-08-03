@@ -1,0 +1,39 @@
+# AWS Route Table Configuration
+# This file defines route table updates for the AWS Network Firewall project
+
+route_tables:
+  # Example route table - replace with actual route table IDs
+  - table_id: "rtb-1234567890abcdef0"  # Replace with actual route table ID
+    description: "Public route table for internet access"
+    routes:
+      - destination: "0.0.0.0/0"
+        target: "igw-1234567890abcdef0"  # Replace with actual internet gateway ID
+        description: "Default route to internet gateway"
+        target_type: "gateway"
+      
+      - destination: "10.0.0.0/16"
+        target: "pcx-1234567890abcdef0"  # Replace with actual VPC peering connection ID
+        description: "Route to peered VPC"
+        target_type: "vpc-peering"
+
+  - table_id: "rtb-0987654321fedcba0"  # Replace with actual route table ID
+    description: "Private route table for internal traffic"
+    routes:
+      - destination: "0.0.0.0/0"
+        target: "nat-1234567890abcdef0"  # Replace with actual NAT gateway ID
+        description: "Default route through NAT gateway"
+        target_type: "nat"
+      
+      - destination: "172.16.0.0/12"
+        target: "pcx-0987654321fedcba0"  # Replace with actual VPC peering connection ID
+        description: "Route to another peered VPC"
+        target_type: "vpc-peering"
+
+  # Add more route tables as needed
+  # - table_id: "rtb-example3"
+  #   description: "Another route table"
+  #   routes:
+  #     - destination: "192.168.0.0/16"
+  #       target: "eni-1234567890abcdef0"
+  #       description: "Route to network interface"
+  #       target_type: "network-interface" 
